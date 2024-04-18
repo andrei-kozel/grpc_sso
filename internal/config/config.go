@@ -20,6 +20,8 @@ type GRPCConfig struct {
 	Timeout time.Duration `yaml:"timeout"`
 }
 
+const defaultConfigPath = "./config/local.yaml"
+
 func MustLoad() *Config {
 	path := fetchConfigPath()
 
@@ -48,6 +50,10 @@ func fetchConfigPath() string {
 
 	if result == "" {
 		result = os.Getenv("CONFIG_PATH")
+	}
+
+	if result == "" {
+		result = defaultConfigPath
 	}
 
 	return result
