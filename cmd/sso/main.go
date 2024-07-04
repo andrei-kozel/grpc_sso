@@ -6,21 +6,15 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/andrei-kozel/go-utils/utils/prettylog"
 	"github.com/andrei-kozel/grpc_sso/internal/app"
 	"github.com/andrei-kozel/grpc_sso/internal/config"
-	"github.com/andrei-kozel/grpc_sso/internal/lib/prettylog"
-)
-
-const (
-	envLocal = "local"
-	envDev   = "dev"
-	envProd  = "prod"
 )
 
 func main() {
 	config := config.MustLoad()
+	log := prettylog.SetupLoggger(config.Env)
 
-	log := setupLoggger(config.Env)
 	log.Info("Srarting application", slog.String("env", config.Env))
 
 	application := app.New(log, config.GRPC.Port, config.StoragePath, config.TokenTTL)
@@ -33,19 +27,4 @@ func main() {
 	log.Info("stopping application", slog.String("signal", sign.String()))
 	application.GRPCServer.Stop()
 	log.Info("Application stopped")
-}
-
-func setupLoggger(env string) *slog.Logger {
-	log := slog.New(prettylog.NewHandler(nil))
-
-	switch env {
-	case envLocal:
-		log = slog.New(prettylog.NewHandler(&slog.HandlerOptions{Level: slog.LevelDebug}))
-	case envDev:
-		log = slog.New(prettylog.NewHandler(&slog.HandlerOptions{Level: slog.LevelInfo}))
-	case envProd:
-		log = slog.New(prettylog.NewHandler(&slog.HandlerOptions{Level: slog.LevelInfo}))
-	}
-
-	return log
 }

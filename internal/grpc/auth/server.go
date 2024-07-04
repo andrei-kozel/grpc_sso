@@ -16,23 +16,10 @@ type serverAPI struct {
 }
 
 type Auth interface {
-	Login(
-		ctx context.Context,
-		email string,
-		password string,
-		appID int,
-	) (token string, err error)
-	Register(
-		ctx context.Context,
-		email string,
-		passwrd string,
-	) (userID int, err error)
-	Logout(
-		token string,
-	) (success bool, err error)
-	IsAdmin(
-		userId int,
-	) (isAdmin bool, err error)
+	Login(ctx context.Context, email string, password string, appID int) (token string, err error)
+	Register(ctx context.Context, email string, passwrd string) (userID int, err error)
+	Logout(token string) (success bool, err error)
+	IsAdmin(userId int) (isAdmin bool, err error)
 }
 
 func Register(gRPC *grpc.Server, auth Auth) {

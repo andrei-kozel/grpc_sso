@@ -43,9 +43,7 @@ type AppProvider interface {
 	App(ctx context.Context, appID int) (models.App, error)
 }
 
-var (
-	ErrorInvalidCredentials = errors.New("invalid credentials")
-)
+var ErrorInvalidCredentials = errors.New("invalid credentials")
 
 func New(log *slog.Logger,
 	userSaver UserSaver,
@@ -97,6 +95,7 @@ func (a *Auth) Login(ctx context.Context, email string, password string, appID i
 	}
 
 	app, err := a.appProvider.App(ctx, appID)
+	_ = app
 	if err != nil {
 		if errors.Is(err, storage.ErrorAppNotFound) {
 			a.log.Warn("app not found")

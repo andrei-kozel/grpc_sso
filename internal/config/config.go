@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
 	Env         string        `yaml:"env" env-default:"local"`
-	StoragePath string        `yaml:"storage_path" env-required:"./data"`
+	StoragePath string        `yaml:"storage_path" env-required:"true"`
 	TokenTTL    time.Duration `yaml:"token_ttl" env-required:"true"`
 	GRPC        GRPCConfig    `yaml:"grpc"`
 }
@@ -20,9 +21,12 @@ type GRPCConfig struct {
 	Timeout time.Duration `yaml:"timeout"`
 }
 
-const defaultConfigPath = "./config/local.yaml"
-
 func MustLoad() *Config {
+	err := godotenv.Load()
+	if err != nil {
+		panic("error loading .env file")
+	}
+
 	path := fetchConfigPath()
 
 	if path == "" {
@@ -50,10 +54,6 @@ func fetchConfigPath() string {
 
 	if result == "" {
 		result = os.Getenv("CONFIG_PATH")
-	}
-
-	if result == "" {
-		result = defaultConfigPath
 	}
 
 	return result
