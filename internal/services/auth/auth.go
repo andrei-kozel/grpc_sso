@@ -32,7 +32,7 @@ type UserSaver interface {
 		ctx context.Context,
 		email string,
 		passHash []byte,
-	) (id int, err error)
+	) (id int64, err error)
 }
 
 type UserProvider interface {
@@ -136,7 +136,7 @@ func (a *Auth) Logout(token string) (success bool, err error) {
 }
 
 // Register implements auth.Auth.
-func (a *Auth) Register(ctx context.Context, email string, passwrd string) (userID int, err error) {
+func (a *Auth) Register(ctx context.Context, email string, passwrd string) (userID int64, err error) {
 	const op = "auth.RegisterNewUser"
 
 	log := a.log.With(
