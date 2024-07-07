@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug SSO Service",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/cmd/sso/main.go",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "CONFIG_PATH": "${workspaceFolder}/config/local.yaml"
+      }
+    }
+  ]
+}

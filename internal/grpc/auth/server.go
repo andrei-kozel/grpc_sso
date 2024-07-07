@@ -15,6 +15,10 @@ type serverAPI struct {
 	auth Auth
 }
 
+const (
+	emptyValue = 0
+)
+
 type Auth interface {
 	Login(ctx context.Context, email string, password string, appID int) (token string, err error)
 	Register(ctx context.Context, email string, passwrd string) (userID int, err error)
@@ -66,9 +70,31 @@ func (s *serverAPI) Regisrter(ctx context.Context, req *ssov1.RegisterRequest) (
 }
 
 func (s *serverAPI) IsAdmin(ctx context.Context, req *ssov1.IsAdminRequest) (*ssov1.IsAdminResponse, error) {
-	panic("not implemeted")
+	if req.GetUserId() == emptyValue {
+		return nil, status.Error(codes.Code(code.Code_INVALID_ARGUMENT), "user_id is required")
+	}
+
+	isAdmin, err := s.auth.IsAdmin(int(req.GetUserId()))
+	if err != nil {
+		return nil, status.Error(codes.Code(code.Code_INTERNAL), "internal error")
+	}
+
+	return &ssov1.IsAdminResponse{
+		IsAdmin: isAdmin,
+	}, nil
 }
 
 func (s *serverAPI) Logout(ctx context.Context, req *ssov1.LogoutRequest) (*ssov1.LogoutResponse, error) {
-	panic("not implemeted")
+	if req.GetToken() == "" {
+		return nil, status.Error(codes.Code(code.Code_INVALID_ARGUMENT), "token is required")
+	}
+
+	success, err := s.auth.Logout(req.GetToken())
+	if err != nil {
+		return nil, status.Error(codes.Code(code.Code_INTERNAL), "internal error")
+	}
+
+	return &ssov1.LogoutResponse{
+		Success: success,
+	}, nil
 }

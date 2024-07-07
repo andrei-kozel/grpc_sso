@@ -26,5 +26,5 @@ func main() {
 	sign := <-stop
 	log.Info("stopping application", slog.String("signal", sign.String()))
 	application.GRPCServer.Stop()
-	log.Info("Application stopped")
+	log.Info("application stopped")
 }

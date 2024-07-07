@@ -22,9 +22,11 @@ type GRPCConfig struct {
 }
 
 func MustLoad() *Config {
-	err := godotenv.Load()
-	if err != nil {
-		panic("error loading .env file")
+	if os.Getenv("CONFIG_PATH") == "" {
+		err := godotenv.Load()
+		if err != nil {
+			panic("error loading .env file")
+		}
 	}
 
 	path := fetchConfigPath()

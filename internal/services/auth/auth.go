@@ -9,6 +9,7 @@ import (
 
 	ssov1 "github.com/andrei-kozel/grpc-protobuf/gen/go/sso"
 	"github.com/andrei-kozel/grpc_sso/internal/domain/models"
+	"github.com/andrei-kozel/grpc_sso/internal/lib/jwt"
 	"github.com/andrei-kozel/grpc_sso/internal/services/storage"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -60,7 +61,23 @@ func New(log *slog.Logger,
 }
 
 func (a *Auth) IsAdmin(userId int) (isAdmin bool, err error) {
-	panic("unimplemented")
+	const op = "auth.IsAdmin"
+
+	log := a.log.With(
+		slog.String("op", op),
+		slog.Int("user_id", userId),
+	)
+
+	log.Info("checking if user is admin")
+
+	isAdmin, err = a.userProvider.IsAdmin(context.Background(), int64(userId))
+	if err != nil {
+		log.Error("failed to check if user is admin", err)
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Info("user is admin")
+	return isAdmin, nil
 }
 
 // Login implements auth.Auth.
@@ -80,7 +97,7 @@ func (a *Auth) Login(ctx context.Context, email string, password string, appID i
 		if errors.Is(err, storage.ErrorUserNotFound) {
 			a.log.Warn("user not found")
 
-			return "", fmt.Errorf("%s: %w", op, &ErrorInvalidCredentials)
+			return "", fmt.Errorf("%s: %w", op, ErrorInvalidCredentials)
 		}
 
 		a.log.Error("failed to get user", err)
@@ -95,13 +112,18 @@ func (a *Auth) Login(ctx context.Context, email string, password string, appID i
 	}
 
 	app, err := a.appProvider.App(ctx, appID)
-	_ = app
 	if err != nil {
 		if errors.Is(err, storage.ErrorAppNotFound) {
 			a.log.Warn("app not found")
-			return "", fmt.Errorf("%s: %w", op, &ErrorInvalidCredentials)
+			return "", fmt.Errorf("%s: %w", op, ErrorInvalidCredentials)
 		}
 		a.log.Error("failed to get app", err)
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	token, err = jwt.NewToken(user, app, a.tokenTTL)
+	if err != nil {
+		a.log.Error("failed to generate token", err)
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
