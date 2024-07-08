@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"time"
 
@@ -21,15 +22,19 @@ type GRPCConfig struct {
 	Timeout time.Duration `yaml:"timeout"`
 }
 
-func MustLoad() *Config {
-	if os.Getenv("CONFIG_PATH") == "" {
+func MustLoad(path string) *Config {
+	wd, _ := os.Getwd()
+	fmt.Println("wd", wd)
+	if os.Getenv("CONFIG_PATH") == "" && path == "" {
 		err := godotenv.Load()
 		if err != nil {
-			panic("error loading .env file")
+			fmt.Println("Error loading .env file")
 		}
 	}
 
-	path := fetchConfigPath()
+	if path == "" {
+		path = fetchConfigPath()
+	}
 
 	if path == "" {
 		panic("config path is required")

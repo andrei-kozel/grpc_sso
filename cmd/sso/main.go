@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	config := config.MustLoad()
+	config := config.MustLoad("")
 	log := prettylog.SetupLoggger(config.Env)
 
 	log.Info("Srarting application", slog.String("env", config.Env))
