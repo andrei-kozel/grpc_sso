@@ -82,6 +82,23 @@ func (s *Storage) IsAdmin(ctx context.Context, userId int64) (bool, error) {
 }
 
 func (s *Storage) App(ctx context.Context, appID int) (models.App, error) {
-	// TODO: not implemented
-	return models.App{}, nil
+	const op = "storage.sqlite.App"
+
+	stmt, err := s.db.Prepare("SELECT id, name, secret FROM apps WHERE id = ?")
+	if err != nil {
+		return models.App{}, fmt.Errorf("%s: %w", op, storage.ErrorAppNotFound)
+	}
+
+	row := stmt.QueryRowContext(ctx, appID)
+
+	var app models.App
+	err = row.Scan(&app.ID, &app.Name, &app.Secret)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.App{}, fmt.Errorf("%s: %w", op, storage.ErrorAppNotFound)
+		}
+		return models.App{}, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return app, nil
 }
